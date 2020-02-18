@@ -2,6 +2,7 @@ package com.example.praluizin;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -17,6 +18,8 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
+
+import java.io.FileNotFoundException;
 
 public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
 
@@ -40,7 +43,15 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         Button btn_reset = (Button) findViewById(R.id.btn_reset);
         btn_change.setOnClickListener(this);
         btn_reset.setOnClickListener(this);
-
+        imageView.setImageBitmap(bitmap);
+        Button ch=findViewById(R.id.ch);
+        ch.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent=new Intent(MainActivity.this,BaoHoActivity.class);
+                startActivity(intent);
+            }
+        });
         /*拿寬高 用post可以確保呈現*/
         gridLayout.post(new Runnable() {
             @Override
@@ -63,11 +74,39 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
             gridLayout.addView(add,phw,phh);
         }
     }
+    public void openAlbum() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        //设置请求码，以便我们区分返回的数据
+        startActivityForResult(intent, 100);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if (100 == requestCode) {
+            if (data != null) {
+                //获取数据
+                //获取内容解析者对象
+                try {
+                    Bitmap mBitmap = BitmapFactory.decodeStream(
+                            getContentResolver().openInputStream(data.getData()));
+                    imageView.setImageBitmap(mBitmap);
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
 
     private void initMatrix() {
         for (int x=0;x<20;x++){
             if (x%6 == 0){
                 phss[x].setText(String.valueOf(1));
+
+            }else {
                 phss[x].setText(String.valueOf(0));
             }
         }
@@ -96,7 +135,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 initMatrix();
                 break;
         }
-        //作用矩阵效果
         getMatrix();
         setImgMatrix();
     }
