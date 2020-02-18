@@ -20,9 +20,15 @@ import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
 
@@ -51,7 +57,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         btn_reset.setOnClickListener(this);
         imageView.setImageBitmap(bitmap);
         Button ch=findViewById(R.id.ch);
-
+        final int TAKE_PICTURE = 1;
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -61,13 +67,18 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                     if(!folder.exists()){
                         folder.mkdir();
                     }
-                    File file = new File(dir + "summer" + ".jpg");
+
+                    Date currentTime = Calendar.getInstance().getTime();
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    String dateString = sdf.format(currentTime);
+                    File file = new File(dir + dateString + ".jpg");
                     if(file.exists()){
                         file.delete();
                     }
                     if(!file.exists()){
                         file.createNewFile();
                     }
+
                     FileOutputStream out = new FileOutputStream(file);
                     bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
                     out.flush();
@@ -80,7 +91,8 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                openAlbum();
+               // openAlbum();
+                openCamera();
             }
         });
         ch.setOnClickListener(new View.OnClickListener() {
@@ -119,14 +131,19 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         startActivityForResult(intent, 100);
     }
 
+    public void  openCamera(){
+        startActivityForResult(new Intent("android.media.action.IMAGE_CAPTURE"), 1);
+    }
+
+
+
+
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         super.onActivityResult(requestCode, resultCode, data);
         if (100 == requestCode) {
             if (data != null) {
-                //获取数据
-                //获取内容解析者对象
                 try {
                     bitmap = BitmapFactory.decodeStream(
                             getContentResolver().openInputStream(data.getData()));
@@ -134,7 +151,26 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
+            }
+        }else if (requestCode == 1) {
+            if (resultCode == RESULT_OK) {
+                bitmap = (Bitmap) data.getExtras().get("data");
+                imageView.setImageBitmap(bitmap);//想图像显示在ImageView视图上，private ImageView img;
+                File myCaptureFile = new File("sdcard/123456.jpg");
+                try {
+                    BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(myCaptureFile));
+                    /* 采用压缩转档方法 */
+                    bitmap.compress(Bitmap.CompressFormat.JPEG, 80, bos);
 
+                    /* 调用flush()方法，更新BufferStream */
+                    bos.flush();
+                    bos.close();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
