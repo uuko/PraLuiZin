@@ -2,6 +2,8 @@ package com.example.praluizin;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -19,6 +21,7 @@ import android.widget.EditText;
 import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -91,8 +94,24 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-               // openAlbum();
-                openCamera();
+                final String[] dinner = {"開檔案圖片","拍照"};
+                AlertDialog.Builder dialog_list = new AlertDialog.Builder(MainActivity.this);
+                dialog_list.setItems(dinner, new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // TODO Auto-generated method stub
+                        if (dinner[which].equals("開檔案圖片")){
+                            Toast.makeText(MainActivity.this, "你選的是" + dinner[which], Toast.LENGTH_SHORT).show();
+                            openAlbum();
+                        }
+                        else if (dinner[which].equals("拍照")){
+                            Toast.makeText(MainActivity.this, "你選的是" + dinner[which], Toast.LENGTH_SHORT).show();
+                            openCamera();
+                        }
+
+                    }
+                });
+                dialog_list.show();
             }
         });
         ch.setOnClickListener(new View.OnClickListener() {
@@ -127,7 +146,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     public void openAlbum() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
-        //设置请求码，以便我们区分返回的数据
         startActivityForResult(intent, 100);
     }
 
@@ -159,10 +177,10 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 File myCaptureFile = new File("sdcard/123456.jpg");
                 try {
                     BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(myCaptureFile));
-                    /* 采用压缩转档方法 */
+                    /*壓縮*/
                     bitmap.compress(Bitmap.CompressFormat.JPEG, 80, bos);
 
-                    /* 调用flush()方法，更新BufferStream */
+                    /* 用flush()方法，更新BufferStream */
                     bos.flush();
                     bos.close();
                 } catch (FileNotFoundException e) {
