@@ -11,6 +11,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.os.Bundle;
+import android.os.Environment;
 import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
@@ -19,7 +20,9 @@ import android.widget.GridLayout;
 import android.widget.GridView;
 import android.widget.ImageView;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
 
@@ -28,8 +31,10 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     private ImageView imageView;
     private GridLayout gridLayout;
     private int phw,phh;
+    private Button save;
     /*有二十個矩陣*/
     EditText [] phss=new EditText[20];
+    Bitmap bmp;
     float[] mColorMatrix = new float[20];
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,11 +45,44 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         imageView = (ImageView) findViewById(R.id.iv_photo);
         gridLayout = (GridLayout) findViewById(R.id.matrix_layout);
         Button btn_change = (Button) findViewById(R.id.btn_change);
+        save=findViewById(R.id.save);
         Button btn_reset = (Button) findViewById(R.id.btn_reset);
         btn_change.setOnClickListener(this);
         btn_reset.setOnClickListener(this);
         imageView.setImageBitmap(bitmap);
         Button ch=findViewById(R.id.ch);
+
+        save.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                final String dir = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "potato" + File.separator;
+                try {
+                    File folder = new File(dir);
+                    if(!folder.exists()){
+                        folder.mkdir();
+                    }
+                    File file = new File(dir + "summer" + ".jpg");
+                    if(file.exists()){
+                        file.delete();
+                    }
+                    if(!file.exists()){
+                        file.createNewFile();
+                    }
+                    FileOutputStream out = new FileOutputStream(file);
+                    bmp.compress(Bitmap.CompressFormat.JPEG, 100, out);
+                    out.flush();
+                    out.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        imageView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openAlbum();
+            }
+        });
         ch.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -90,9 +128,9 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 //获取数据
                 //获取内容解析者对象
                 try {
-                    Bitmap mBitmap = BitmapFactory.decodeStream(
+                    bitmap = BitmapFactory.decodeStream(
                             getContentResolver().openInputStream(data.getData()));
-                    imageView.setImageBitmap(mBitmap);
+                    imageView.setImageBitmap(bitmap);
                 } catch (FileNotFoundException e) {
                     e.printStackTrace();
                 }
@@ -114,7 +152,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
 
     private void setImgMatrix(){
         /*32位元*/
-        Bitmap bmp=Bitmap.createBitmap(bitmap.getWidth(),bitmap.getHeight(),Bitmap.Config.ARGB_8888);
+         bmp=Bitmap.createBitmap(bitmap.getWidth(),bitmap.getHeight(),Bitmap.Config.ARGB_8888);
         ColorMatrix colorMatrix=new ColorMatrix();
         colorMatrix.set(mColorMatrix);
 
